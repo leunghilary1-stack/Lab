@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LabSuite</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f2f2f7; margin: 0; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #1c1c1e; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .result { font-size: 1.2em; font-weight: bold; color: #007aff; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { padding: 20px; border: none; border-radius: 12px; font-weight: bold; color: white; font-size: 14px; transition: opacity 0.1s; }
+        button:active { opacity: 0.7; transform: scale(0.95); }
+        .neu { background: #5856d6; } .lym { background: #ff2d55; }
+        .mon { background: #ff9500; } .eos { background: #4cd964; }
+        .reset { background: #8e8e93; grid-column: span 2; margin-top: 10px; }
+        .total-box { text-align: center; font-size: 1.5em; margin: 15px 0; font-weight: 800; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Dilution (C1V1 = C2V2)</h2>
+        <input type="number" id="c1" placeholder="Stock Conc (C1)" oninput="calc()">
+        <input type="number" id="c2" placeholder="Target Conc (C2)" oninput="calc()">
+        <input type="number" id="v2" placeholder="Target Vol (V2)" oninput="calc()">
+        <p>Take <span id="v1" class="result">0.00</span> of stock.</p>
+    </div>
+
+    <div class="card">
+        <h2>Diff Counter</h2>
+        <div class="total-box">Total: <span id="total">0</span>/100</div>
+        <div class="grid">
+            <button class="neu" onclick="count('neu')">NEU<br><span id="c-neu">0</span></button>
+            <button class="lym" onclick="count('lym')">LYM<br><span id="c-lym">0</span></button>
+            <button class="mon" onclick="count('mon')">MON<br><span id="c-mon">0</span></button>
+            <button class="eos" onclick="count('eos')">EOS<br><span id="c-eos">0</span></button>
+            <button class="reset" onclick="resetCounter()">Reset All</button>
+        </div>
+    </div>
+
+    <script>
+        function calc() {
+            const c1 = document.getElementById('c1').value;
+            const c2 = document.getElementById('c2').value;
+            const v2 = document.getElementById('v2').value;
+            if (c1 > 0) {
+                const v1 = (c2 * v2) / c1;
+                document.getElementById('v1').innerText = v1.toFixed(2);
+            }
+        }
+
+        let counts = { neu: 0, lym: 0, mon: 0, eos: 0, total: 0 };
+        function count(type) {
+            counts[type]++;
+            counts.total++;
+            document.getElementById('c-' + type).innerText = counts[type];
+            document.getElementById('total').innerText = counts.total;
+            
+            // Haptic Feedback (Works on iPhone)
+            if (window.navigator.vibrate) window.navigator.vibrate(50);
+            
+            if (counts.total === 100) {
+                alert("100 Cells Reached!");
+                if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+            }
+        }
+
+        function resetCounter() {
+            counts = { neu: 0, lym: 0, mon: 0, eos: 0, total: 0 };
+            ['neu', 'lym', 'mon', 'eos'].forEach(t => document.getElementById('c-' + t).innerText = '0');
+            document.getElementById('total').innerText = '0';
+        }
+    </script>
+</body>
+</html>
