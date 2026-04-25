@@ -183,16 +183,29 @@
         }
 
         function count(type) {
-            counts[type]++;
-            if (type !== 'nrb') {
-                wbcTotal++;
-                document.getElementById('total').innerText = wbcTotal;
-                if (wbcTotal == goal) alert("WBC Goal reached!");
-            }
-            document.getElementById('c-' + type).innerText = counts[type];
-            updateSummary();
-            if (window.navigator.vibrate) window.navigator.vibrate(40);
+    // --- INSERT HAPTIC CODE HERE ---
+    if (window.navigator.vibrate) {
+        window.navigator.vibrate(50); // 50ms is a sharp, crisp "click"
+    }
+    // -------------------------------
+
+    counts[type]++;
+    
+    if (type !== 'nrb') {
+        wbcTotal++;
+        document.getElementById('total').innerText = wbcTotal;
+        
+        if (wbcTotal == goal) {
+            // A special "Double Thump" when you finish the count
+            if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+            alert("WBC Goal reached!");
         }
+    }
+    
+    document.getElementById('c-' + type).innerText = counts[type];
+    updateSummary();
+}
+
 
         function updateSummary() {
             let html = "";
