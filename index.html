@@ -3,76 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LabSuite Pro</title>
+    <title>LabSuite Max</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f2f2f7; margin: 0; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { margin-top: 0; color: #1c1c1e; border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.2em; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .result-box { background: #e9f2ff; padding: 15px; border-radius: 10px; margin-top: 10px; }
+        body { font-family: -apple-system, sans-serif; background: #f2f2f7; margin: 0; padding: 15px; }
+        .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; font-size: 1.1em; color: #1c1c1e; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .result-box { background: #e9f2ff; padding: 12px; border-radius: 10px; margin-top: 10px; font-size: 0.9em; }
         .result { font-weight: bold; color: #007aff; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { padding: 20px; border: none; border-radius: 12px; font-weight: bold; color: white; font-size: 14px; }
-        button:active { opacity: 0.7; transform: scale(0.95); }
-        .neu { background: #5856d6; } .lym { background: #ff2d55; }
-        .mon { background: #ff9500; } .eos { background: #4cd964; }
-        .reset { background: #8e8e93; grid-column: span 2; margin-top: 10px; }
-        .total-box { text-align: center; font-size: 1.4em; margin: 10px 0; font-weight: 800; color: #1c1c1e; }
-        label { font-size: 0.8em; color: #666; font-weight: bold; }
+        
+        /* Grid for 12 cell types */
+        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        button { padding: 15px 5px; border: none; border-radius: 10px; font-weight: bold; color: white; font-size: 11px; text-transform: uppercase; }
+        button:active { opacity: 0.7; transform: scale(0.92); }
+        
+        /* Color Coding */
+        .c-mature { background: #5856d6; } /* Purple: Neut, Lym, Mon */
+        .c-gran   { background: #ff2d55; } /* Red/Pink: Eos, Baso */
+        .c-imm    { background: #ff9500; } /* Orange: Meta, Myelo, Pro */
+        .c-blast  { background: #af52de; } /* Violet: Blast */
+        .c-other  { background: #8e8e93; } /* Grey: OC, NRBC, AL */
+        
+        .reset { background: #000; grid-column: span 3; margin-top: 10px; padding: 10px; }
+        .total-box { text-align: center; font-size: 1.2em; margin: 10px 0; font-weight: 800; }
+        .summary { font-size: 0.8em; margin-top: 15px; column-count: 2; line-height: 1.6; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h2>Dilution Calculator</h2>
-        <label>Stock Conc (C1)</label>
-        <input type="number" id="c1" placeholder="e.g. 100" oninput="calc()">
-        <label>Target Conc (C2)</label>
-        <input type="number" id="c2" placeholder="e.g. 10" oninput="calc()">
-        <label>Target Total Vol (V2)</label>
-        <input type="number" id="v2" placeholder="e.g. 500" oninput="calc()">
-        
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="c1" placeholder="C1" oninput="calc()">
+            <input type="number" id="c2" placeholder="C2" oninput="calc()">
+            <input type="number" id="v2" placeholder="V2" oninput="calc()">
+        </div>
         <div class="result-box">
-            <div>Stock ($V_1$): <span id="v1" class="result">0.00</span></div>
-            <div>Diluent to Add: <span id="diluent" class="result">0.00</span></div>
+            Stock: <span id="v1" class="result">0.00</span> | 
+            Diluent: <span id="diluent" class="result">0.00</span>
         </div>
     </div>
 
     <div class="card">
         <h2>Diff Counter</h2>
-        <label>Target Cell Goal:</label>
-        <input type="number" id="goal" value="100" oninput="updateGoal()">
-        
-        <div class="total-box">Total: <span id="total">0</span> / <span id="currentGoal">100</span></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <span>Goal: <input type="number" id="goal" value="100" style="width: 60px;" oninput="updateGoal()"></span>
+            <div class="total-box">Total: <span id="total">0</span>/<span id="currentGoal">100</span></div>
+        </div>
         
         <div class="grid">
-            <button class="neu" onclick="count('neu')">NEU<br><span id="c-neu">0</span></button>
-            <button class="lym" onclick="count('lym')">LYM<br><span id="c-lym">0</span></button>
-            <button class="mon" onclick="count('mon')">MON<br><span id="c-mon">0</span></button>
-            <button class="eos" onclick="count('eos')">EOS<br><span id="c-eos">0</span></button>
-            <button class="reset" onclick="resetCounter()">Reset All</button>
+            <button class="c-mature" onclick="count('neu')">NEU<br><span id="c-neu">0</span></button>
+            <button class="c-mature" onclick="count('lym')">LYM<br><span id="c-lym">0</span></button>
+            <button class="c-mature" onclick="count('mon')">MON<br><span id="c-mon">0</span></button>
+            
+            <button class="c-gran" onclick="count('eos')">EOS<br><span id="c-eos">0</span></button>
+            <button class="c-gran" onclick="count('bas')">BAS<br><span id="c-bas">0</span></button>
+            <button class="c-other" onclick="count('aly')">A-LYM<br><span id="c-aly">0</span></button>
+            
+            <button class="c-imm" onclick="count('met')">META<br><span id="c-met">0</span></button>
+            <button class="c-imm" onclick="count('mye')">MYELO<br><span id="c-mye">0</span></button>
+            <button class="c-imm" onclick="count('pro')">PRO<br><span id="c-pro">0</span></button>
+            
+            <button class="c-blast" onclick="count('bla')">BLAST<br><span id="c-bla">0</span></button>
+            <button class="c-other" onclick="count('oc')">OC<br><span id="c-oc">0</span></button>
+            <button class="c-other" onclick="count('nrb')">NRBC<br><span id="c-nrb">0</span></button>
+            
+            <button class="reset" onclick="resetCounter()">Reset All Counts</button>
         </div>
+
+        <div class="summary" id="summary">
+            </div>
     </div>
 
     <script>
-        // DILUTION LOGIC
+        const cellTypes = ['neu', 'lym', 'mon', 'eos', 'bas', 'aly', 'met', 'mye', 'pro', 'bla', 'oc', 'nrb'];
+        let counts = {};
+        cellTypes.forEach(t => counts[t] = 0);
+        let total = 0;
+        let goal = 100;
+
         function calc() {
             const c1 = parseFloat(document.getElementById('c1').value) || 0;
             const c2 = parseFloat(document.getElementById('c2').value) || 0;
             const v2 = parseFloat(document.getElementById('v2').value) || 0;
-            
             if (c1 > 0) {
                 const v1 = (c2 * v2) / c1;
-                const diluent = v2 - v1;
-                
                 document.getElementById('v1').innerText = v1.toFixed(2);
-                document.getElementById('diluent').innerText = diluent > 0 ? diluent.toFixed(2) : "0.00";
+                document.getElementById('diluent').innerText = (v2 - v1 > 0) ? (v2 - v1).toFixed(2) : "0.00";
             }
         }
-
-        // COUNTER LOGIC
-        let counts = { neu: 0, lym: 0, mon: 0, eos: 0, total: 0 };
-        let goal = 100;
 
         function updateGoal() {
             goal = parseInt(document.getElementById('goal').value) || 1;
@@ -81,23 +100,42 @@
 
         function count(type) {
             counts[type]++;
-            counts.total++;
+            total++;
             document.getElementById('c-' + type).innerText = counts[type];
-            document.getElementById('total').innerText = counts.total;
+            document.getElementById('total').innerText = total;
             
-            if (window.navigator.vibrate) window.navigator.vibrate(50);
+            updateSummary();
             
-            if (counts.total === goal) {
-                alert("Goal of " + goal + " cells reached!");
+            if (window.navigator.vibrate) window.navigator.vibrate(40);
+            
+            if (total === goal) {
+                alert("Goal reached!");
                 if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
             }
         }
 
+        function updateSummary() {
+            let html = "";
+            cellTypes.forEach(t => {
+                if (counts[t] > 0) {
+                    let pct = ((counts[t] / total) * 100).toFixed(1);
+                    html += `<div>${t.toUpperCase()}: ${pct}%</div>`;
+                }
+            });
+            document.getElementById('summary').innerHTML = html;
+        }
+
         function resetCounter() {
-            counts = { neu: 0, lym: 0, mon: 0, eos: 0, total: 0 };
-            ['neu', 'lym', 'mon', 'eos'].forEach(t => document.getElementById('c-' + t).innerText = '0');
+            if(!confirm("Reset all counts?")) return;
+            total = 0;
+            cellTypes.forEach(t => {
+                counts[t] = 0;
+                document.getElementById('c-' + t).innerText = '0';
+            });
             document.getElementById('total').innerText = '0';
+            document.getElementById('summary').innerHTML = '';
         }
     </script>
 </body>
 </html>
+
