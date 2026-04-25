@@ -21,7 +21,21 @@
         
         /* Grid for Counter */
         .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .cell-btn { padding: 15px 5px; border: none; border-radius: 10px; font-weight: bold; color: white; font-size: 11px; text-transform: uppercase; }
+        .cell-btn {
+    padding: 15px 5px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    color: white;
+    font-size: 11px;
+    text-transform: uppercase;
+    
+    /* THE FIXES */
+    touch-action: manipulation; 
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
         .c-mature { background: #5856d6; } .c-gran { background: #ff2d55; } 
         .c-imm { background: #ff9500; } .c-blast { background: #af52de; } 
         .c-nrbc { background: #4cd964; } .c-other { background: #8e8e93; }
