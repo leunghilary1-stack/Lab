@@ -3,84 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LabSuite Max</title>
+    <title>LabSuite Pro</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f2f2f7; margin: 0; padding: 15px; }
-        .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { margin-top: 0; font-size: 1.1em; color: #1c1c1e; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .result-box { background: #e9f2ff; padding: 12px; border-radius: 10px; margin-top: 10px; font-size: 0.9em; }
-        .result { font-weight: bold; color: #007aff; }
+        :root { --ios-blue: #007aff; --ios-grey: #f2f2f7; }
+        body { font-family: -apple-system, sans-serif; background: var(--ios-grey); margin: 0; padding: 0; padding-bottom: 80px; }
         
+        /* Header */
+        .header { background: white; padding: 20px 15px 10px; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 10; }
+        h1 { margin: 0; font-size: 1.5em; }
+
+        /* Tabs Logic */
+        .tab-content { display: none; padding: 15px; }
+        .tab-content.active { display: block; }
+
+        /* Card Styling */
+        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; font-size: 1.1em; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        
+        /* Inputs & Buttons */
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        button { padding: 15px 5px; border: none; border-radius: 10px; font-weight: bold; color: white; font-size: 11px; text-transform: uppercase; }
-        button:active { opacity: 0.7; transform: scale(0.92); }
+        .cell-btn { padding: 15px 5px; border: none; border-radius: 10px; font-weight: bold; color: white; font-size: 11px; text-transform: uppercase; }
+        .cell-btn:active { opacity: 0.7; transform: scale(0.92); }
         
-        /* Color Coding */
-        .c-mature { background: #5856d6; } 
-        .c-gran   { background: #ff2d55; } 
-        .c-imm    { background: #ff9500; } 
-        .c-blast  { background: #af52de; } 
-        .c-nrbc   { background: #4cd964; } /* Distinct Green for NRBC */
-        .c-other  { background: #8e8e93; } 
-        
-        .reset { background: #000; grid-column: span 3; margin-top: 10px; padding: 10px; }
-        .total-box { text-align: center; font-size: 1.2em; margin: 10px 0; font-weight: 800; }
+        /* Colors */
+        .c-mature { background: #5856d6; } .c-gran { background: #ff2d55; } 
+        .c-imm { background: #ff9500; } .c-blast { background: #af52de; } 
+        .c-nrbc { background: #4cd964; } .c-other { background: #8e8e93; }
+
+        /* Tab Bar (Bottom Navigation) */
+        .tab-bar { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: 25px; }
+        .tab-item { background: none; border: none; color: #8e8e93; font-size: 11px; display: flex; flex-direction: column; align-items: center; }
+        .tab-item.active { color: var(--ios-blue); }
+        .tab-icon { font-size: 24px; margin-bottom: 4px; }
+
+        /* Results */
+        .result-box { background: #e9f2ff; padding: 12px; border-radius: 10px; margin-top: 10px; font-size: 0.9em; }
         .summary { font-size: 0.8em; margin-top: 15px; column-count: 2; line-height: 1.6; }
-        .nrbc-stat { color: #28a745; font-weight: bold; border-top: 1px solid #eee; padding-top: 5px; grid-column: span 2; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Dilution Calculator</h2>
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="c1" placeholder="Stock conc." oninput="calc()">
-            <input type="number" id="c2" placeholder="Target conc." oninput="calc()">
-            <input type="number" id="v2" placeholder="Final volume (uL)" oninput="calc()">
-        </div>
-        <div class="result-box">
-            Stock: <span id="v1" class="result">0.00</span> | 
-            Diluent: <span id="diluent" class="result">0.00</span>
+    <div class="header">
+        <h1 id="page-title">Diff Counter</h1>
+    </div>
+
+    <div id="tab-counter" class="tab-content active">
+        <div class="card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <span>WBC Goal: <input type="number" id="goal" value="100" style="width: 50px;" oninput="updateGoal()"></span>
+                <div style="font-weight: 800;">WBC: <span id="total">0</span>/<span id="currentGoal">100</span></div>
+            </div>
+            <div class="grid">
+                <button class="cell-btn c-mature" onclick="count('neu')">NEU<br><span id="c-neu">0</span></button>
+                <button class="cell-btn c-mature" onclick="count('lym')">LYM<br><span id="c-lym">0</span></button>
+                <button class="cell-btn c-mature" onclick="count('mon')">MON<br><span id="c-mon">0</span></button>
+                <button class="cell-btn c-gran" onclick="count('eos')">EOS<br><span id="c-eos">0</span></button>
+                <button class="cell-btn c-gran" onclick="count('bas')">BAS<br><span id="c-bas">0</span></button>
+                <button class="cell-btn c-other" onclick="count('aly')">A-LYM<br><span id="c-aly">0</span></button>
+                <button class="cell-btn c-imm" onclick="count('met')">META<br><span id="c-met">0</span></button>
+                <button class="cell-btn c-imm" onclick="count('mye')">MYELO<br><span id="c-mye">0</span></button>
+                <button class="cell-btn c-imm" onclick="count('pro')">PRO<br><span id="c-pro">0</span></button>
+                <button class="cell-btn c-blast" onclick="count('bla')">BLAST<br><span id="c-bla">0</span></button>
+                <button class="cell-btn c-other" onclick="count('oc')">OC<br><span id="c-oc">0</span></button>
+                <button class="cell-btn c-nrbc" onclick="count('nrb')">NRBC<br><span id="c-nrb">0</span></button>
+            </div>
+            <button onclick="resetCounter()" style="width:100%; background:#000; color:white; border:none; padding:10px; border-radius:8px; margin-top:10px;">Reset All</button>
+            <div class="summary" id="summary"></div>
         </div>
     </div>
 
-    <div class="card">
-        <h2>Diff Counter</h2>
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-            <span>WBC Goal: <input type="number" id="goal" value="100" style="width: 50px;" oninput="updateGoal()"></span>
-            <div class="total-box">WBC: <span id="total">0</span>/<span id="currentGoal">100</span></div>
+    <div id="tab-dilution" class="tab-content">
+        <div class="card">
+            <h2>Dilution ($C_1V_1 = C_2V_2$)</h2>
+            <input type="number" id="c1" placeholder="Stock Conc (C1)" oninput="calc()">
+            <input type="number" id="c2" placeholder="Target Conc (C2)" oninput="calc()">
+            <input type="number" id="v2" placeholder="Target Volume (V2)" oninput="calc()">
+            <div class="result-box">
+                Stock: <span id="v1" style="font-weight:bold;">0.00</span><br>
+                Diluent to add: <span id="diluent" style="font-weight:bold;">0.00</span>
+            </div>
         </div>
-        
-        <div class="grid">
-            <button class="c-mature" onclick="count('neu')">NEU<br><span id="c-neu">0</span></button>
-            <button class="c-mature" onclick="count('lym')">LYM<br><span id="c-lym">0</span></button>
-            <button class="c-mature" onclick="count('mon')">MON<br><span id="c-mon">0</span></button>
-            
-            <button class="c-gran" onclick="count('eos')">EOS<br><span id="c-eos">0</span></button>
-            <button class="c-gran" onclick="count('bas')">BAS<br><span id="c-bas">0</span></button>
-            <button class="c-other" onclick="count('aly')">A-LYM<br><span id="c-aly">0</span></button>
-            
-            <button class="c-imm" onclick="count('met')">META<br><span id="c-met">0</span></button>
-            <button class="c-imm" onclick="count('mye')">MYELO<br><span id="c-mye">0</span></button>
-            <button class="c-imm" onclick="count('pro')">PRO<br><span id="c-pro">0</span></button>
-            
-            <button class="c-blast" onclick="count('bla')">BLAST<br><span id="c-bla">0</span></button>
-            <button class="c-other" onclick="count('oc')">OC<br><span id="c-oc">0</span></button>
-            <button class="c-nrbc" onclick="count('nrb')">NRBC<br><span id="c-nrb">0</span></button>
-            
-            <button class="reset" onclick="resetCounter()">Reset All</button>
-        </div>
-
-        <div class="summary" id="summary"></div>
     </div>
+
+    <nav class="tab-bar">
+        <button class="tab-item active" onclick="switchTab('counter', this)">
+            <span class="tab-icon">🔬</span>
+            <span>Counter</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('dilution', this)">
+            <span class="tab-icon">🧪</span>
+            <span>Dilution</span>
+        </button>
+    </nav>
 
     <script>
+        // TAB SWITCHING LOGIC
+        function switchTab(tabId, btn) {
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            // Remove active class from buttons
+            document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+            
+            // Show selected
+            document.getElementById('tab-' + tabId).classList.add('active');
+            btn.classList.add('active');
+            
+            // Update Header
+            document.getElementById('page-title').innerText = btn.innerText;
+        }
+
+        // --- ALL PREVIOUS LOGIC (CALC & COUNT) BELOW ---
         const cellTypes = ['neu', 'lym', 'mon', 'eos', 'bas', 'aly', 'met', 'mye', 'pro', 'bla', 'oc', 'nrb'];
-        let counts = {};
-        cellTypes.forEach(t => counts[t] = 0);
-        let wbcTotal = 0; 
-        let goal = 100;
+        let counts = {}; cellTypes.forEach(t => counts[t] = 0);
+        let wbcTotal = 0; let goal = 100;
 
         function calc() {
             const c1 = parseFloat(document.getElementById('c1').value) || 0;
@@ -93,24 +129,13 @@
             }
         }
 
-        function updateGoal() {
-            goal = parseInt(document.getElementById('goal').value) || 1;
-            document.getElementById('currentGoal').innerText = goal;
-        }
-
         function count(type) {
             counts[type]++;
-            
-            // Only non-NRBC cells increment the WBC total and trigger the goal alert
             if (type !== 'nrb') {
                 wbcTotal++;
                 document.getElementById('total').innerText = wbcTotal;
-                if (wbcTotal === goal) {
-                    alert("WBC Goal reached!");
-                    if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
-                }
+                if (wbcTotal == goal) alert("WBC Goal reached!");
             }
-
             document.getElementById('c-' + type).innerText = counts[type];
             updateSummary();
             if (window.navigator.vibrate) window.navigator.vibrate(40);
@@ -124,20 +149,14 @@
                     html += `<div>${t.toUpperCase()}: ${pct}%</div>`;
                 }
             });
-            // Show NRBC ratio separately at the bottom
-            if (counts['nrb'] > 0) {
-                html += `<div class="nrbc-stat">NRBC: ${counts['nrb']} per ${wbcTotal} WBC</div>`;
-            }
+            if (counts['nrb'] > 0) html += `<div style="color:green; font-weight:bold; grid-column:span 2;">NRBC: ${counts['nrb']} per ${wbcTotal} WBC</div>`;
             document.getElementById('summary').innerHTML = html;
         }
 
         function resetCounter() {
-            if(!confirm("Reset all counts?")) return;
+            if(!confirm("Reset?")) return;
             wbcTotal = 0;
-            cellTypes.forEach(t => {
-                counts[t] = 0;
-                document.getElementById('c-' + t).innerText = '0';
-            });
+            cellTypes.forEach(t => { counts[t] = 0; document.getElementById('c-' + t).innerText = '0'; });
             document.getElementById('total').innerText = '0';
             document.getElementById('summary').innerHTML = '';
         }
