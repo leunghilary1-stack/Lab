@@ -3,41 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LabSuite Pro</title>
+    <title>LabSuite Max</title>
     <style>
-        :root { --ios-blue: #007aff; --ios-grey: #f2f2f7; }
-        body { font-family: -apple-system, sans-serif; background: var(--ios-grey); margin: 0; padding: 0; padding-bottom: 80px; }
+        :root { --ios-blue: #007aff; --ios-grey: #f2f2f7; --ios-red: #ff3b30; --ios-green: #34c759; }
+        body { font-family: -apple-system, sans-serif; background: var(--ios-grey); margin: 0; padding: 0; padding-bottom: 90px; }
         
-        /* Header */
         .header { background: white; padding: 20px 15px 10px; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 10; }
         h1 { margin: 0; font-size: 1.5em; }
 
-        /* Tabs Logic */
         .tab-content { display: none; padding: 15px; }
         .tab-content.active { display: block; }
 
-        /* Card Styling */
         .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         h2 { margin-top: 0; font-size: 1.1em; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         
-        /* Inputs & Buttons */
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        
+        /* Grid for Counter */
         .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .cell-btn { padding: 15px 5px; border: none; border-radius: 10px; font-weight: bold; color: white; font-size: 11px; text-transform: uppercase; }
-        .cell-btn:active { opacity: 0.7; transform: scale(0.92); }
-        
-        /* Colors */
         .c-mature { background: #5856d6; } .c-gran { background: #ff2d55; } 
         .c-imm { background: #ff9500; } .c-blast { background: #af52de; } 
         .c-nrbc { background: #4cd964; } .c-other { background: #8e8e93; }
 
-        /* Tab Bar (Bottom Navigation) */
-        .tab-bar { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: 25px; }
+        /* Timer Styling */
+        .timer-row { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .timer-row:last-child { border: none; }
+        .timer-controls { display: flex; gap: 8px; align-items: center; margin-top: 5px; }
+        .timer-name { font-weight: bold; border: none; padding: 5px; background: #f9f9f9; width: 60%; }
+        .timer-display { font-family: monospace; font-size: 1.2em; font-weight: bold; min-width: 60px; }
+        .btn-start { background: var(--ios-green); color: white; border: none; border-radius: 5px; padding: 8px 12px; }
+        .btn-stop { background: var(--ios-red); color: white; border: none; border-radius: 5px; padding: 8px 12px; }
+
+        /* Tab Bar */
+        .tab-bar { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 10px 0 25px; }
         .tab-item { background: none; border: none; color: #8e8e93; font-size: 11px; display: flex; flex-direction: column; align-items: center; }
         .tab-item.active { color: var(--ios-blue); }
         .tab-icon { font-size: 24px; margin-bottom: 4px; }
 
-        /* Results */
         .result-box { background: #e9f2ff; padding: 12px; border-radius: 10px; margin-top: 10px; font-size: 0.9em; }
         .summary { font-size: 0.8em; margin-top: 15px; column-count: 2; line-height: 1.6; }
     </style>
@@ -68,52 +71,102 @@
                 <button class="cell-btn c-other" onclick="count('oc')">OC<br><span id="c-oc">0</span></button>
                 <button class="cell-btn c-nrbc" onclick="count('nrb')">NRBC<br><span id="c-nrb">0</span></button>
             </div>
-            <button onclick="resetCounter()" style="width:100%; background:#000; color:white; border:none; padding:10px; border-radius:8px; margin-top:10px;">Reset All</button>
+            <button onclick="resetCounter()" style="width:100%; background:#000; color:white; border:none; padding:10px; border-radius:8px; margin-top:10px;">Reset Counts</button>
             <div class="summary" id="summary"></div>
         </div>
     </div>
 
     <div id="tab-dilution" class="tab-content">
         <div class="card">
-            <h2>Dilution ($C_1V_1 = C_2V_2$)</h2>
-            <input type="number" id="c1" placeholder="Stock Conc (C1)" oninput="calc()">
-            <input type="number" id="c2" placeholder="Target Conc (C2)" oninput="calc()">
-            <input type="number" id="v2" placeholder="Target Volume (V2)" oninput="calc()">
+            <h2>Dilution Calculation</h2>
+            <label style="font-size: 0.8em; color: #666;">Stock Concentration (C1)</label>
+            <input type="number" id="c1" placeholder="C1" oninput="calc()">
+            <label style="font-size: 0.8em; color: #666;">Target Concentration (C2)</label>
+            <input type="number" id="c2" placeholder="C2" oninput="calc()">
+            <label style="font-size: 0.8em; color: #666;">Final Volume (V2)</label>
+            <input type="number" id="v2" placeholder="V2" oninput="calc()">
             <div class="result-box">
-                Stock: <span id="v1" style="font-weight:bold;">0.00</span><br>
+                Required Stock: <span id="v1" style="font-weight:bold;">0.00</span><br>
                 Diluent to add: <span id="diluent" style="font-weight:bold;">0.00</span>
             </div>
         </div>
     </div>
 
+    <div id="tab-timers" class="tab-content">
+        <div class="card">
+            <h2>Lab Timers</h2>
+            <div id="timer-container">
+                </div>
+        </div>
+    </div>
+
     <nav class="tab-bar">
         <button class="tab-item active" onclick="switchTab('counter', this)">
-            <span class="tab-icon">🔬</span>
-            <span>Counter</span>
+            <span class="tab-icon">🔬</span><span>Counter</span>
         </button>
         <button class="tab-item" onclick="switchTab('dilution', this)">
-            <span class="tab-icon">🧪</span>
-            <span>Dilution</span>
+            <span class="tab-icon">🧪</span><span>Dilution</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('timers', this)">
+            <span class="tab-icon">⏱️</span><span>Timers</span>
         </button>
     </nav>
 
     <script>
-        // TAB SWITCHING LOGIC
+        // --- TAB LOGIC ---
         function switchTab(tabId, btn) {
-            // Hide all content
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            // Remove active class from buttons
             document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
-            
-            // Show selected
             document.getElementById('tab-' + tabId).classList.add('active');
             btn.classList.add('active');
-            
-            // Update Header
             document.getElementById('page-title').innerText = btn.innerText;
         }
 
-        // --- ALL PREVIOUS LOGIC (CALC & COUNT) BELOW ---
+        // --- TIMER LOGIC ---
+        const timerContainer = document.getElementById('timer-container');
+        let timers = [null, null, null, null, null];
+        let timerIntervals = [null, null, null, null, null];
+
+        for (let i = 0; i < 5; i++) {
+            timerContainer.innerHTML += `
+                <div class="timer-row">
+                    <input type="text" class="timer-name" placeholder="Timer ${i+1} (e.g. Gram Stain)">
+                    <div class="timer-controls">
+                        <input type="number" id="time-input-${i}" placeholder="Sec" style="width: 70px; margin: 0;">
+                        <span class="timer-display" id="display-${i}">00:00</span>
+                        <button class="btn-start" onclick="startTimer(${i})">▶</button>
+                        <button class="btn-stop" onclick="stopTimer(${i})">⏹</button>
+                    </div>
+                </div>`;
+        }
+
+        function startTimer(i) {
+            if (timerIntervals[i]) return;
+            let seconds = parseInt(document.getElementById(`time-input-${i}`).value) || 0;
+            if (seconds <= 0) return;
+
+            timerIntervals[i] = setInterval(() => {
+                seconds--;
+                let m = Math.floor(seconds / 60);
+                let s = seconds % 60;
+                document.getElementById(`display-${i}`).innerText = `${m}:${s < 10 ? '0'+s : s}`;
+                
+                if (seconds <= 0) {
+                    clearInterval(timerIntervals[i]);
+                    timerIntervals[i] = null;
+                    alert(`Timer "${document.querySelectorAll('.timer-name')[i].value || 'Timer '+(i+1)}" finished!`);
+                    if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
+                }
+            }, 1000);
+        }
+
+        function stopTimer(i) {
+            clearInterval(timerIntervals[i]);
+            timerIntervals[i] = null;
+            document.getElementById(`display-${i}`).innerText = "00:00";
+        }
+
+        // --- COUNTER & CALC LOGIC ---
         const cellTypes = ['neu', 'lym', 'mon', 'eos', 'bas', 'aly', 'met', 'mye', 'pro', 'bla', 'oc', 'nrb'];
         let counts = {}; cellTypes.forEach(t => counts[t] = 0);
         let wbcTotal = 0; let goal = 100;
@@ -159,6 +212,11 @@
             cellTypes.forEach(t => { counts[t] = 0; document.getElementById('c-' + t).innerText = '0'; });
             document.getElementById('total').innerText = '0';
             document.getElementById('summary').innerHTML = '';
+        }
+
+        function updateGoal() {
+            goal = parseInt(document.getElementById('goal').value) || 1;
+            document.getElementById('currentGoal').innerText = goal;
         }
     </script>
 </body>
