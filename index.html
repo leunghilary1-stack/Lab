@@ -12,21 +12,22 @@
         .result-box { background: #e9f2ff; padding: 12px; border-radius: 10px; margin-top: 10px; font-size: 0.9em; }
         .result { font-weight: bold; color: #007aff; }
         
-        /* Grid for 12 cell types */
         .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         button { padding: 15px 5px; border: none; border-radius: 10px; font-weight: bold; color: white; font-size: 11px; text-transform: uppercase; }
         button:active { opacity: 0.7; transform: scale(0.92); }
         
         /* Color Coding */
-        .c-mature { background: #5856d6; } /* Purple: Neut, Lym, Mon */
-        .c-gran   { background: #ff2d55; } /* Red/Pink: Eos, Baso */
-        .c-imm    { background: #ff9500; } /* Orange: Meta, Myelo, Pro */
-        .c-blast  { background: #af52de; } /* Violet: Blast */
-        .c-other  { background: #8e8e93; } /* Grey: OC, NRBC, AL */
+        .c-mature { background: #5856d6; } 
+        .c-gran   { background: #ff2d55; } 
+        .c-imm    { background: #ff9500; } 
+        .c-blast  { background: #af52de; } 
+        .c-nrbc   { background: #4cd964; } /* Distinct Green for NRBC */
+        .c-other  { background: #8e8e93; } 
         
         .reset { background: #000; grid-column: span 3; margin-top: 10px; padding: 10px; }
         .total-box { text-align: center; font-size: 1.2em; margin: 10px 0; font-weight: 800; }
         .summary { font-size: 0.8em; margin-top: 15px; column-count: 2; line-height: 1.6; }
+        .nrbc-stat { color: #28a745; font-weight: bold; border-top: 1px solid #eee; padding-top: 5px; grid-column: span 2; }
     </style>
 </head>
 <body>
@@ -47,8 +48,8 @@
     <div class="card">
         <h2>Diff Counter</h2>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-            <span>Goal: <input type="number" id="goal" value="100" style="width: 60px;" oninput="updateGoal()"></span>
-            <div class="total-box">Total: <span id="total">0</span>/<span id="currentGoal">100</span></div>
+            <span>WBC Goal: <input type="number" id="goal" value="100" style="width: 50px;" oninput="updateGoal()"></span>
+            <div class="total-box">WBC: <span id="total">0</span>/<span id="currentGoal">100</span></div>
         </div>
         
         <div class="grid">
@@ -66,20 +67,19 @@
             
             <button class="c-blast" onclick="count('bla')">BLAST<br><span id="c-bla">0</span></button>
             <button class="c-other" onclick="count('oc')">OC<br><span id="c-oc">0</span></button>
-            <button class="c-other" onclick="count('nrb')">NRBC<br><span id="c-nrb">0</span></button>
+            <button class="c-nrbc" onclick="count('nrb')">NRBC<br><span id="c-nrb">0</span></button>
             
-            <button class="reset" onclick="resetCounter()">Reset All Counts</button>
+            <button class="reset" onclick="resetCounter()">Reset All</button>
         </div>
 
-        <div class="summary" id="summary">
-            </div>
+        <div class="summary" id="summary"></div>
     </div>
 
     <script>
         const cellTypes = ['neu', 'lym', 'mon', 'eos', 'bas', 'aly', 'met', 'mye', 'pro', 'bla', 'oc', 'nrb'];
         let counts = {};
         cellTypes.forEach(t => counts[t] = 0);
-        let total = 0;
+        let wbcTotal = 0; 
         let goal = 100;
 
         function calc() {
@@ -100,34 +100,40 @@
 
         function count(type) {
             counts[type]++;
-            total++;
-            document.getElementById('c-' + type).innerText = counts[type];
-            document.getElementById('total').innerText = total;
             
-            updateSummary();
-            
-            if (window.navigator.vibrate) window.navigator.vibrate(40);
-            
-            if (total === goal) {
-                alert("Goal reached!");
-                if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+            // Only non-NRBC cells increment the WBC total and trigger the goal alert
+            if (type !== 'nrb') {
+                wbcTotal++;
+                document.getElementById('total').innerText = wbcTotal;
+                if (wbcTotal === goal) {
+                    alert("WBC Goal reached!");
+                    if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+                }
             }
+
+            document.getElementById('c-' + type).innerText = counts[type];
+            updateSummary();
+            if (window.navigator.vibrate) window.navigator.vibrate(40);
         }
 
         function updateSummary() {
             let html = "";
             cellTypes.forEach(t => {
-                if (counts[t] > 0) {
-                    let pct = ((counts[t] / total) * 100).toFixed(1);
+                if (counts[t] > 0 && t !== 'nrb') {
+                    let pct = ((counts[t] / wbcTotal) * 100).toFixed(1);
                     html += `<div>${t.toUpperCase()}: ${pct}%</div>`;
                 }
             });
+            // Show NRBC ratio separately at the bottom
+            if (counts['nrb'] > 0) {
+                html += `<div class="nrbc-stat">NRBC: ${counts['nrb']} per ${wbcTotal} WBC</div>`;
+            }
             document.getElementById('summary').innerHTML = html;
         }
 
         function resetCounter() {
             if(!confirm("Reset all counts?")) return;
-            total = 0;
+            wbcTotal = 0;
             cellTypes.forEach(t => {
                 counts[t] = 0;
                 document.getElementById('c-' + t).innerText = '0';
@@ -138,4 +144,3 @@
     </script>
 </body>
 </html>
-
